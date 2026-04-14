@@ -76,16 +76,16 @@ export default function App() {
         <h1>CARDS</h1>
         <div className="header-controls">
           <div className="file-upload-wrapper btn btn-secondary">
-            Load words
+            Load words from .json
             <input type="file" accept=".json" onChange={handleFileUpload} />
           </div>
-          <button 
+          <button
             className="btn btn-secondary"
             onClick={() => setDirectionEnRu(!directionEnRu)}
           >
             {directionEnRu ? "En-Ru" : "Ru-En"}
           </button>
-          <button 
+          <button
             className="btn"
             onClick={() => setView(view === 'learn' ? 'manage' : 'learn')}
           >
@@ -98,16 +98,16 @@ export default function App() {
         {view === 'learn' ? (
           learningWords.length > 0 ? (
             <>
-              <FlashCard 
-                wordPair={learningWords[currentWordIndex]} 
-                directionEnRu={directionEnRu} 
+              <FlashCard
+                wordPair={learningWords[currentWordIndex]}
+                directionEnRu={directionEnRu}
               />
-              
+
               <div style={{ marginTop: '1.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '1.1rem', background: 'rgba(255,255,255,0.7)', padding: '0.5rem 1rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={!!learningWords[currentWordIndex].learned} 
+                  <input
+                    type="checkbox"
+                    checked={!!learningWords[currentWordIndex].learned}
                     onChange={handleMarkLearned}
                     style={{ width: '1.2rem', height: '1.2rem' }}
                   />
