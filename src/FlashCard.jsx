@@ -3,9 +3,36 @@ import React, { useState, useEffect } from 'react';
 export default function FlashCard({ wordPair, directionEnRu }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  // Reset flip state if the word changes
+
+  // Auto-play English pronunciation when the card opens (regardless of direction)
   useEffect(() => {
-    setIsFlipped(false);
+    if (!wordPair) return;
+
+    window.speechSynthesis.cancel();
+
+    const speak = () => {
+      const utterance = new SpeechSynthesisUtterance(wordPair.en);
+      utterance.lang = "en-US";
+      const voices = window.speechSynthesis.getVoices();
+      const voice = voices.find(v => v.lang.startsWith("en"));
+      if (voice) utterance.voice = voice;
+      window.speechSynthesis.speak(utterance);
+    };
+
+    const voices = window.speechSynthesis.getVoices();
+    if (voices.length > 0) {
+      speak();
+    } else {
+      // Voices not loaded yet — wait for them
+      window.speechSynthesis.onvoiceschanged = () => {
+        window.speechSynthesis.onvoiceschanged = null;
+        speak();
+      };
+    }
+
+    return () => {
+      window.speechSynthesis.cancel();
+    };
   }, [wordPair, directionEnRu]);
 
   if (!wordPair) return null;

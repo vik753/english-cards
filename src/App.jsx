@@ -3,34 +3,32 @@ import FlashCard from './FlashCard';
 import WordManager from './WordManager';
 
 export default function App() {
-  const [words, setWords] = useState([]);
-  const [view, setView] = useState('learn'); // 'learn' | 'manage'
-  const [directionEnRu, setDirectionEnRu] = useState(true);
-  const [currentWordIndex, setCurrentWordIndex] = useState(0);
-
-  // Load from localStorage on mount
-  useEffect(() => {
+  const [words, setWords] = useState(() => {
     const saved = localStorage.getItem('cards_dictionary');
     if (saved) {
       try {
-        setWords(JSON.parse(saved));
+        return JSON.parse(saved);
       } catch (e) {
         console.error("Failed to parse dictionary", e);
       }
     }
-  }, []);
+    return [];
+  });
+  const [view, setView] = useState('learn'); // 'learn' | 'manage'
+  const [directionEnRu, setDirectionEnRu] = useState(true);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
   const learningWords = words.filter(w => !w.learned);
+
+  // Adjust index if out of bounds (React recommends doing this during render)
+  if (learningWords.length > 0 && currentWordIndex >= learningWords.length) {
+    setCurrentWordIndex(Math.max(0, learningWords.length - 1));
+  }
 
   // Save to localStorage whenever words change
   useEffect(() => {
     localStorage.setItem('cards_dictionary', JSON.stringify(words));
-    // Reset index if out of bounds
-    const currentLearning = words.filter(w => !w.learned);
-    if (currentLearning.length > 0 && currentWordIndex >= currentLearning.length) {
-      setCurrentWordIndex(Math.max(0, currentLearning.length - 1));
-    }
-  }, [words, currentWordIndex]);
+  }, [words]);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -47,6 +45,7 @@ export default function App() {
         }));
         setWords(prev => [...prev, ...importedArray]);
       } catch (err) {
+        console.error(err);
         alert("Invalid JSON format. Please upload a valid JSON file like {\"word\": \"translation\"}.");
       }
     };
@@ -99,6 +98,7 @@ export default function App() {
           learningWords.length > 0 ? (
             <>
               <FlashCard
+                key={`${learningWords[currentWordIndex]?.id}-${directionEnRu}`}
                 wordPair={learningWords[currentWordIndex]}
                 directionEnRu={directionEnRu}
               />
