@@ -16,14 +16,43 @@ export default function App() {
   });
   const [view, setView] = useState('learn'); // 'learn' | 'manage'
   const [directionEnRu, setDirectionEnRu] = useState(true);
+
+  const [currentRound, setCurrentRound] = useState(1);
+  const [roundQueue, setRoundQueue] = useState([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
   const learningWords = words.filter(w => !w.learned);
+  const currentWordId = roundQueue[currentWordIndex];
+  const currentWordPair = words.find(w => w.id === currentWordId);
 
-  // Adjust index if out of bounds (React recommends doing this during render)
-  if (learningWords.length > 0 && currentWordIndex >= learningWords.length) {
-    setCurrentWordIndex(Math.max(0, learningWords.length - 1));
-  }
+  // Generate queue for the current round
+  useEffect(() => {
+    if (learningWords.length === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setRoundQueue([]);
+      return;
+    }
+
+    const available = learningWords.filter(w => (w.nextRound || 1) <= currentRound);
+
+    if (available.length === 0) {
+      // Fast-forward to the next round that has words
+      const minRound = Math.min(...learningWords.map(w => w.nextRound || 1));
+      if (minRound > currentRound) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setCurrentRound(minRound);
+      }
+      return;
+    }
+
+    // Shuffle the available words
+    const shuffledIds = available.map(w => w.id).sort(() => Math.random() - 0.5);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRoundQueue(shuffledIds);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCurrentWordIndex(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRound, words.length]); // Intentionally omitting full words dependency to prevent mid-round reshuffling
 
   // Save to localStorage whenever words change
   useEffect(() => {
@@ -54,19 +83,42 @@ export default function App() {
   };
 
   const nextWord = () => {
-    if (learningWords.length === 0) return;
-    setCurrentWordIndex((prev) => (prev + 1) % learningWords.length);
+    if (roundQueue.length === 0) return;
+
+    // Assign nextRound based on skip logic before moving
+    if (currentWordPair) {
+      let skip = 0;
+      const lvl = currentWordPair.level || 0;
+      if (lvl === 2) skip = 1;
+      else if (lvl === 3) skip = 3;
+      else if (lvl === 4) skip = 4;
+
+      const newNextRound = currentRound + 1 + skip;
+      setWords(prev => prev.map(w => w.id === currentWordId ? { ...w, nextRound: newNextRound } : w));
+    }
+
+    if (currentWordIndex >= roundQueue.length - 1) {
+      setCurrentRound(r => r + 1);
+    } else {
+      setCurrentWordIndex(i => i + 1);
+    }
   };
 
   const prevWord = () => {
-    if (learningWords.length === 0) return;
-    setCurrentWordIndex((prev) => (prev - 1 + learningWords.length) % learningWords.length);
+    if (roundQueue.length === 0) return;
+    if (currentWordIndex > 0) {
+      setCurrentWordIndex(i => i - 1);
+    }
   };
 
   const handleMarkLearned = (e) => {
-    if (learningWords.length === 0) return;
-    const currentId = learningWords[currentWordIndex].id;
-    setWords(words.map(w => w.id === currentId ? { ...w, learned: e.target.checked } : w));
+    if (!currentWordId) return;
+    setWords(words.map(w => w.id === currentWordId ? { ...w, learned: e.target.checked } : w));
+  };
+
+  const handleLevelChange = (newLevel) => {
+    if (!currentWordId) return;
+    setWords(words.map(w => w.id === currentWordId ? { ...w, level: newLevel } : w));
   };
 
   return (
@@ -95,19 +147,23 @@ export default function App() {
 
       <main className="main-content">
         {view === 'learn' ? (
-          learningWords.length > 0 ? (
+          roundQueue.length > 0 && currentWordPair ? (
             <>
+              <div style={{ textAlign: 'center', marginBottom: '0.5rem', color: '#666', fontWeight: 'bold' }}>
+                Round {currentRound}
+              </div>
               <FlashCard
-                key={`${learningWords[currentWordIndex]?.id}-${directionEnRu}`}
-                wordPair={learningWords[currentWordIndex]}
+                key={`${currentWordId}-${directionEnRu}`}
+                wordPair={currentWordPair}
                 directionEnRu={directionEnRu}
+                onLevelChange={handleLevelChange}
               />
 
               <div style={{ marginTop: '1.5rem' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '1.1rem', background: 'rgba(255,255,255,0.7)', padding: '0.5rem 1rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <input
                     type="checkbox"
-                    checked={!!learningWords[currentWordIndex].learned}
+                    checked={!!currentWordPair.learned}
                     onChange={handleMarkLearned}
                     style={{ width: '1.2rem', height: '1.2rem' }}
                   />
@@ -116,9 +172,9 @@ export default function App() {
               </div>
 
               <div className="controls-bar">
-                <button className="btn btn-secondary" onClick={prevWord}>Previous</button>
+                <button className="btn btn-secondary" onClick={prevWord} disabled={currentWordIndex === 0}>Previous</button>
                 <div style={{ alignSelf: 'center', fontWeight: 'bold' }}>
-                  {currentWordIndex + 1} / {learningWords.length}
+                  {currentWordIndex + 1} / {roundQueue.length}
                 </div>
                 <button className="btn" onClick={nextWord}>Next Step</button>
               </div>

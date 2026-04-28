@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from 'react';
 
-export default function FlashCard({ wordPair, directionEnRu }) {
+export default function FlashCard({ wordPair, directionEnRu, onLevelChange }) {
   const [isFlipped, setIsFlipped] = useState(false);
 
 
-  // Auto-play English pronunciation when the card opens (regardless of direction)
+  // Auto-play English pronunciation when the English face is shown
   useEffect(() => {
     if (!wordPair) return;
+
+    const isShowingEnglish = directionEnRu ? !isFlipped : isFlipped;
+    if (!isShowingEnglish) {
+      // If we flip away from English (or start on Russian), ensure no English audio is playing
+      window.speechSynthesis.cancel();
+      return;
+    }
 
     window.speechSynthesis.cancel();
 
@@ -33,7 +40,7 @@ export default function FlashCard({ wordPair, directionEnRu }) {
     return () => {
       window.speechSynthesis.cancel();
     };
-  }, [wordPair, directionEnRu]);
+  }, [wordPair, directionEnRu, isFlipped]);
 
   if (!wordPair) return null;
 
@@ -61,10 +68,54 @@ export default function FlashCard({ wordPair, directionEnRu }) {
   const frontLang = directionEnRu ? 'en-US' : 'ru-RU';
   const backLang = directionEnRu ? 'ru-RU' : 'en-US';
 
+  const handleLevelClick = (e) => {
+    e.stopPropagation();
+    if (!onLevelChange) return;
+    const currentLevel = wordPair.level || 0;
+    const nextLevel = currentLevel >= 4 ? 0 : currentLevel + 1;
+    onLevelChange(nextLevel);
+  };
+
+  const renderKnowledgeBlocks = () => {
+    const level = wordPair.level || 0;
+    return (
+      <div
+        onClick={handleLevelClick}
+        style={{ position: 'absolute', bottom: 20, right: 20, display: 'flex', gap: 2, cursor: 'pointer', zIndex: 10 }}
+        title="Knowledge level (click to increase)"
+      >
+        {[1, 2, 3, 4].map(idx => {
+          let bgColor = '#e0e0e0';
+          if (idx <= level) {
+            switch (idx) {
+                case 1: bgColor = '#ffcccb'; break;
+                case 2: bgColor = '#e8cc4c'; break;
+                case 3: bgColor = '#c4e353'; break;
+                case 4: bgColor = '#51d34b'; break;
+            }
+          }
+          return (
+            <div
+              key={idx}
+              style={{
+                width: 8,
+                height: 14,
+                backgroundColor: bgColor,
+                border: '1px solid #ccc',
+                borderRadius: 2
+              }}
+            />
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="flashcard-container" onClick={handleFlip}>
       <div className={`flashcard ${isFlipped ? 'is-flipped' : ''}`}>
         <div className="flashcard-face">
+          {renderKnowledgeBlocks()}
           <button className="play-btn" onClick={(e) => handlePlay(e, frontText, frontLang)} title="Play pronunciation">
             🔊
           </button>
@@ -72,6 +123,7 @@ export default function FlashCard({ wordPair, directionEnRu }) {
           <span className="card-hint">Click to flip</span>
         </div>
         <div className="flashcard-face flashcard-back">
+          {renderKnowledgeBlocks()}
           <button className="play-btn" onClick={(e) => handlePlay(e, backText, backLang)} title="Play pronunciation">
             🔊
           </button>
