@@ -17,7 +17,10 @@ export default function App() {
   const [view, setView] = useState('learn'); // 'learn' | 'manage'
   const [directionEnRu, setDirectionEnRu] = useState(true);
 
-  const [currentRound, setCurrentRound] = useState(1);
+  const [currentRound, setCurrentRound] = useState(() => {
+    const saved = localStorage.getItem('cards_current_round');
+    return saved ? parseInt(saved, 10) : 1;
+  });
   const [roundQueue, setRoundQueue] = useState([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
@@ -25,10 +28,14 @@ export default function App() {
   const currentWordId = roundQueue[currentWordIndex];
   const currentWordPair = words.find(w => w.id === currentWordId);
 
+  // Save currentRound to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cards_current_round', currentRound.toString());
+  }, [currentRound]);
+
   // Generate queue for the current round
   useEffect(() => {
     if (learningWords.length === 0) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRoundQueue([]);
       return;
     }
@@ -39,7 +46,6 @@ export default function App() {
       // Fast-forward to the next round that has words
       const minRound = Math.min(...learningWords.map(w => w.nextRound || 1));
       if (minRound > currentRound) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentRound(minRound);
       }
       return;
@@ -47,9 +53,7 @@ export default function App() {
 
     // Shuffle the available words
     const shuffledIds = available.map(w => w.id).sort(() => Math.random() - 0.5);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setRoundQueue(shuffledIds);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentWordIndex(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentRound, words.length]); // Intentionally omitting full words dependency to prevent mid-round reshuffling
