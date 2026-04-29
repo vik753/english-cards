@@ -331,6 +331,17 @@ body {
   font-size: 1.25rem;
 }
 
+.level-indicator {
+  padding: 10px;
+  margin: -10px;
+}
+
+.level-block {
+  width: 8px;
+  height: 14px;
+  transition: all 0.2s;
+}
+
 /* Mobile Menu Button */
 .mobile-menu-btn {
   display: none;
@@ -348,9 +359,9 @@ body {
   }
 
   .lang-toggle-btn {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    left: auto;
+    transform: none;
     padding: 0.5rem 1rem;
     font-size: 1rem;
     z-index: 10;
@@ -471,6 +482,11 @@ body {
 
   .word-item .btn-danger {
     align-self: flex-end;
+  }
+
+  .level-block {
+    width: 14px;
+    height: 22px;
   }
 
   .header-controls .btn {

@@ -86,6 +86,7 @@ export default function FlashCard({ wordPair, directionEnRu, onLevelChange }) {
     const level = wordPair.level || 0;
     return (
       <div
+        className="level-indicator"
         onClick={handleLevelClick}
         style={{ position: 'absolute', bottom: 20, right: 20, display: 'flex', gap: 2, cursor: 'pointer', zIndex: 10 }}
         title="Knowledge level (click to increase)"
@@ -103,9 +104,8 @@ export default function FlashCard({ wordPair, directionEnRu, onLevelChange }) {
           return (
             <div
               key={idx}
+              className="level-block"
               style={{
-                width: 8,
-                height: 14,
                 backgroundColor: bgColor,
                 border: '1px solid #ccc',
                 borderRadius: 2

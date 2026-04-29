@@ -140,12 +140,21 @@ export default function App() {
     <div className="app-container">
       <header className="header">
         <h1>CARDS</h1>
-        <button
-          className="btn btn-secondary lang-toggle-btn"
-          onClick={() => { setDirectionEnRu(!directionEnRu); setIsMenuOpen(false); }}
-        >
-          {directionEnRu ? "En-Ru" : "Ru-En"}
-        </button>
+        {view === 'learn' ? (
+          <button
+            className="btn btn-secondary lang-toggle-btn"
+            onClick={() => { setDirectionEnRu(!directionEnRu); setIsMenuOpen(false); }}
+          >
+            {directionEnRu ? "En-Ru" : "Ru-En"}
+          </button>
+        ) : (
+          <button
+            className="btn btn-secondary lang-toggle-btn"
+            onClick={() => { setView('learn'); setIsMenuOpen(false); }}
+          >
+            Start Learning
+          </button>
+        )}
         <div>
           <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Toggle menu">
             {isMenuOpen ? '✖' : '☰'}
@@ -155,12 +164,14 @@ export default function App() {
               Load words from .json
               <input type="file" accept=".json" onChange={(e) => { handleFileUpload(e); setIsMenuOpen(false); }} />
             </div>
-            <button
-              className="btn"
-              onClick={() => { setView(view === 'learn' ? 'manage' : 'learn'); setIsMenuOpen(false); }}
-            >
-              {view === 'learn' ? 'Manage Words' : 'Start Learn'}
-            </button>
+            {view === 'learn' && (
+              <button
+                className="btn"
+                onClick={() => { setView('manage'); setIsMenuOpen(false); }}
+              >
+                Manage Words
+              </button>
+            )}
           </div>
         </div>
       </header>
