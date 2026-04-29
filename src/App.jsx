@@ -24,6 +24,10 @@ export default function App() {
   const [roundQueue, setRoundQueue] = useState([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
   const learningWords = words.filter(w => !w.learned);
   const currentWordId = roundQueue[currentWordIndex];
@@ -136,8 +140,34 @@ export default function App() {
     }
   }, [isMenuOpen]);
 
+  const InstallModal = () => {
+    if (!showInstallPrompt) return null;
+    return (
+      <div style={{
+        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+        background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center',
+        justifyContent: 'center', zIndex: 9999, padding: '20px'
+      }} onClick={() => setShowInstallPrompt(false)}>
+        <div style={{
+          background: 'white', padding: '2rem', borderRadius: '12px',
+          maxWidth: '400px', textAlign: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }} onClick={e => e.stopPropagation()}>
+          <h2>Install on iPhone</h2>
+          <p style={{ margin: '1.5rem 0', fontSize: '1.1rem', lineHeight: '1.5' }}>
+            To install this app on your iPhone:
+            <br/><br/>
+            1. Tap the <strong>Share</strong> button <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinelinejoin="round" style={{verticalAlign: "middle"}}><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg> at the bottom of Safari.<br/><br/>
+            2. Scroll down and tap <strong>Add to Home Screen</strong> <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinelinejoin="round" style={{verticalAlign: "middle"}}><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>.
+          </p>
+          <button className="btn" onClick={() => setShowInstallPrompt(false)}>Close</button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="app-container">
+      <InstallModal />
       <header className="header">
         <h1>CARDS</h1>
         {view === 'learn' ? (
@@ -160,6 +190,11 @@ export default function App() {
             {isMenuOpen ? '✖' : '☰'}
           </button>
           <div className={`header-controls ${isMenuOpen ? 'mobile-open' : ''}`}>
+            {isIOS && !isStandalone && (
+              <button className="btn btn-secondary" onClick={() => { setShowInstallPrompt(true); setIsMenuOpen(false); }}>
+                Install App
+              </button>
+            )}
             <div className="file-upload-wrapper btn btn-secondary">
               Load words from .json
               <input type="file" accept=".json" onChange={(e) => { handleFileUpload(e); setIsMenuOpen(false); }} />
