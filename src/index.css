@@ -23,6 +23,7 @@ body {
   background: var(--bg-color-gradient);
   color: var(--text-main);
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
@@ -32,6 +33,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
 }
 
@@ -57,6 +59,8 @@ body {
   border-radius: 16px;
   box-shadow: var(--card-shadow);
   border: 1px solid rgba(255, 255, 255, 0.5);
+  position: relative;
+  z-index: 10000;
 }
 
 .header h1 {
@@ -90,12 +94,6 @@ body {
   justify-content: center;
 }
 
-.btn:hover {
-  background: var(--accent-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px -1px rgba(2, 132, 199, 0.3);
-}
-
 .btn:active {
   transform: translateY(0);
 }
@@ -106,12 +104,6 @@ body {
   border: 1px solid var(--accent-color);
 }
 
-.btn-secondary:hover {
-  background: #f0f9ff;
-  color: var(--accent-hover);
-  border-color: var(--accent-hover);
-}
-
 .btn-danger {
   background: white;
   color: var(--danger);
@@ -120,8 +112,35 @@ body {
   font-size: 0.9rem;
 }
 
-.btn-danger:hover {
-  background: #fef2f2;
+@media (hover: hover) {
+  .btn:hover {
+    background: var(--accent-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px -1px rgba(2, 132, 199, 0.3);
+  }
+
+  .btn-secondary:hover {
+    background: #f0f9ff;
+    color: var(--accent-hover);
+    border-color: var(--accent-hover);
+  }
+
+  .btn-danger:hover {
+    background: #fef2f2;
+  }
+
+  .play-btn:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+  }
+
+  .flashcard-back .play-btn:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .word-item:hover {
+    transform: translateX(4px);
+  }
 }
 
 /* File Input Wrapper */
@@ -153,6 +172,7 @@ body {
 /* Flashcard 3D Physics */
 .flashcard-container {
   perspective: 1500px;
+  -webkit-perspective: 1500px;
   width: 100%;
   max-width: 500px;
   height: 350px;
@@ -164,13 +184,15 @@ body {
   width: 100%;
   height: 100%;
   position: relative;
-  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), -webkit-transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   border-radius: 24px;
 }
 
 .flashcard.is-flipped {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 
 .flashcard-face {
@@ -184,33 +206,24 @@ body {
   justify-content: center;
   font-size: 3rem;
   font-weight: 700;
-  color: var(--accent-color);
-  background: var(--card-bg);
+  color: #ffffff;
   border-radius: 24px;
   box-shadow: var(--card-shadow);
   padding: 2rem;
   text-align: center;
-  border: 2px solid transparent;
-  background-clip: padding-box;
 }
 
-.flashcard-face::before {
-  content: '';
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  z-index: -1;
-  margin: -2px;
-  border-radius: inherit;
+.flashcard-face:not(.flashcard-back) {
   background: linear-gradient(135deg, #7dd3fc, #0284c7);
+  transform: rotateY(0deg);
+  -webkit-transform: rotateY(0deg);
 }
 
 .flashcard-back {
   transform: rotateY(180deg);
-  background: var(--accent-color);
-  color: white;
-}
-.flashcard-back::before {
+  -webkit-transform: rotateY(180deg);
   background: linear-gradient(135deg, #0284c7, #0f172a);
+  color: #ffffff;
 }
 
 .play-btn {
@@ -233,19 +246,12 @@ body {
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
-.play-btn:hover {
-  background: rgba(255, 255, 255, 0.8);
-  transform: scale(1.1);
-}
-
 .flashcard-back .play-btn {
   background: rgba(0, 0, 0, 0.1);
   border-color: rgba(255, 255, 255, 0.3);
   color: white;
 }
-.flashcard-back .play-btn:hover {
-  background: rgba(0, 0, 0, 0.2);
-}
+
 
 .card-hint {
   position: absolute;
@@ -293,9 +299,7 @@ body {
   transition: transform 0.2s;
 }
 
-.word-item:hover {
-  transform: translateX(4px);
-}
+
 
 .word-inputs {
   display: flex;
@@ -325,4 +329,159 @@ body {
   padding: 4rem 2rem;
   color: var(--text-muted);
   font-size: 1.25rem;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 1rem;
+  }
+
+  .header {
+    backdrop-filter: none;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .lang-toggle-btn {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    z-index: 10;
+  }
+
+  .mobile-menu-btn {
+    display: flex;
+    background: none;
+    border: none;
+    font-size: 2.5rem;
+    color: var(--accent-color);
+    cursor: pointer;
+    position: relative;
+    z-index: 10000;
+    width: 48px;
+    height: 48px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.menu-open .mobile-menu-btn {
+    position: fixed;
+    top: 12px;
+    right: 12px;
+    z-index: 10001;
+    font-size: 3rem;
+  }
+
+  .header-controls {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #ffffff;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding: 80px 6px 20px 6px;
+    gap: 12px;
+    z-index: 9999;
+    transform: translateY(-100%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.3s ease-in-out, opacity 0.3s, visibility 0.3s;
+  }
+
+  .header-controls.mobile-open {
+    transform: translateY(0);
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  body.menu-open {
+    overflow: hidden;
+  }
+
+  .flashcard-container {
+    width: 100%;
+    height: auto;
+    flex: 1;
+    min-height: 0;
+    max-width: 100%;
+    margin: 12px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flashcard {
+    flex: 1;
+  }
+
+  .main-content {
+    padding-bottom: 0;
+    justify-content: flex-start;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bottom-checkbox-container {
+    position: static;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    transform: none;
+    left: auto;
+    bottom: auto;
+    margin-top: 0 !important;
+    margin-bottom: 1.5rem;
+    z-index: auto;
+  }
+
+  .controls-bar {
+    position: static;
+    width: 100%;
+    padding: 0 0 1rem 0;
+    box-shadow: none;
+    background: transparent;
+    margin-top: 0;
+    justify-content: space-between;
+  }
+
+
+  .word-inputs {
+    flex-direction: column;
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+
+  .word-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .word-item .btn-danger {
+    align-self: flex-end;
+  }
+
+  .header-controls .btn {
+    width: 100%;
+    margin-bottom: 0;
+    padding: 1.25rem;
+    font-size: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .header-controls .btn-secondary {
+    border: 2px solid var(--accent-color);
+  }
 }

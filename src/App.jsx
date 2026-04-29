@@ -23,6 +23,7 @@ export default function App() {
   });
   const [roundQueue, setRoundQueue] = useState([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const learningWords = words.filter(w => !w.learned);
   const currentWordId = roundQueue[currentWordIndex];
@@ -125,27 +126,42 @@ export default function App() {
     setWords(words.map(w => w.id === currentWordId ? { ...w, level: newLevel } : w));
   };
 
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.classList.add('menu-open');
+    } else {
+      document.body.classList.remove('menu-open');
+    }
+  }, [isMenuOpen]);
+
   return (
     <div className="app-container">
       <header className="header">
         <h1>CARDS</h1>
-        <div className="header-controls">
-          <div className="file-upload-wrapper btn btn-secondary">
-            Load words from .json
-            <input type="file" accept=".json" onChange={handleFileUpload} />
+        <button
+          className="btn btn-secondary lang-toggle-btn"
+          onClick={() => { setDirectionEnRu(!directionEnRu); setIsMenuOpen(false); }}
+        >
+          {directionEnRu ? "En-Ru" : "Ru-En"}
+        </button>
+        <div>
+          <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Toggle menu">
+            {isMenuOpen ? '✖' : '☰'}
+          </button>
+          <div className={`header-controls ${isMenuOpen ? 'mobile-open' : ''}`}>
+            <div className="file-upload-wrapper btn btn-secondary">
+              Load words from .json
+              <input type="file" accept=".json" onChange={(e) => { handleFileUpload(e); setIsMenuOpen(false); }} />
+            </div>
+            <button
+              className="btn"
+              onClick={() => { setView(view === 'learn' ? 'manage' : 'learn'); setIsMenuOpen(false); }}
+            >
+              {view === 'learn' ? 'Manage Words' : 'Start Learn'}
+            </button>
           </div>
-          <button
-            className="btn btn-secondary"
-            onClick={() => setDirectionEnRu(!directionEnRu)}
-          >
-            {directionEnRu ? "En-Ru" : "Ru-En"}
-          </button>
-          <button
-            className="btn"
-            onClick={() => setView(view === 'learn' ? 'manage' : 'learn')}
-          >
-            {view === 'learn' ? 'Manage Words' : 'Start Learn'}
-          </button>
         </div>
       </header>
 
@@ -163,7 +179,7 @@ export default function App() {
                 onLevelChange={handleLevelChange}
               />
 
-              <div style={{ marginTop: '1.5rem' }}>
+              <div className="bottom-checkbox-container">
                 <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '1.1rem', background: 'rgba(255,255,255,0.7)', padding: '0.5rem 1rem', borderRadius: '12px', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                   <input
                     type="checkbox"

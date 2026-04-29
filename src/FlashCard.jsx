@@ -1,20 +1,26 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 export default function FlashCard({ wordPair, directionEnRu, onLevelChange }) {
   const [isFlipped, setIsFlipped] = useState(false);
+  const lastPlayedRef = useRef({ id: null, isShowingEnglish: null });
 
-
-  // Auto-play English pronunciation when the English face is shown
+  // Auto-play English pronunciation ONLY when English face is shown
   useEffect(() => {
     if (!wordPair) return;
 
     const isShowingEnglish = directionEnRu ? !isFlipped : isFlipped;
+
     if (!isShowingEnglish) {
-      // If we flip away from English (or start on Russian), ensure no English audio is playing
       window.speechSynthesis.cancel();
+      lastPlayedRef.current = { id: wordPair.id, isShowingEnglish: false };
       return;
     }
 
+    if (lastPlayedRef.current.id === wordPair.id && lastPlayedRef.current.isShowingEnglish === true) {
+      return; // Prevent replay if same word didn't change flip state (e.g. level updated)
+    }
+
+    lastPlayedRef.current = { id: wordPair.id, isShowingEnglish: true };
     window.speechSynthesis.cancel();
 
     const speak = () => {
